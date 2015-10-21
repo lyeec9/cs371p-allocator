@@ -94,8 +94,8 @@ class Allocator {
          * throw a bad_alloc exception, if N is less than sizeof(T) + (2 * sizeof(int))
          */
         Allocator () {
-            (*this)[0] = 0; // replace!
-            // <your code>
+            (*this)[0] = N-8; // replace!
+            (*this)[N-4] = N-8;
             assert(valid());}
 
         // Default copy, destructor, and copy assignment
@@ -116,9 +116,32 @@ class Allocator {
          * throw a bad_alloc exception, if n is invalid
          */
         pointer allocate (size_type n) {
-            // <your code>
+            int size = n * sizeof(T);
+            int* current = (int*)a;
+            while(size > *current){
+                char* next = (char*)current;
+                next += 8+*current;
+                if(next >= a + N) {
+                    throw std::bad_alloc();
+                }
+                current = (int*)next; 
+            }
+            if(*current - size - 8 < sizeof(T)) {
+                size = *current;
+                *current = -size;
+                *(current + size/4 + 1) = -size;
+            } else {
+                int temp = *current;
+                *current = -size;
+                *(current + size/4 + 1) = -size;
+                int rem = temp - size - 8;
+                *(current + size/4 + 2) = rem;
+                *(current + size/4 + 3 + rem/4) = rem;
+            }
+            
+
             assert(valid());
-            return nullptr;}             // replace!
+            return (pointer)(current+1);}             // replace!
 
         // ---------
         // construct
@@ -166,5 +189,7 @@ class Allocator {
          */
         const int& operator [] (int i) const {
             return *reinterpret_cast<const int*>(&a[i]);}};
+
+
 
 #endif // Allocator_h

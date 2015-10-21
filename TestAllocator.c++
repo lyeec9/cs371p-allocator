@@ -176,7 +176,7 @@ TYPED_TEST(TestAllocator3, test_10) {
 // --------------
 // Allocate tests
 // --------------
-
+/*
 TEST(TestAllocator4, test_1) {
     const Allocator<int, 100> x;
     int* p = x.allocate(1);
@@ -317,4 +317,4 @@ TEST(TestAllocator5, test_7) {
     } catch (std::invalid_argument& e) {
         SUCCEED();
     }
-}
+}*/
