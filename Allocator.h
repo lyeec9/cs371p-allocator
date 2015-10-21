@@ -94,7 +94,10 @@ class Allocator {
          * throw a bad_alloc exception, if N is less than sizeof(T) + (2 * sizeof(int))
          */
         Allocator () {
-            (*this)[0] = N-8; // replace!
+            if(N < sizeof(T) + 8) {
+                throw std::bad_alloc();
+            }
+            (*this)[0] = N-8;
             (*this)[N-4] = N-8;
             assert(valid());}
 
@@ -118,7 +121,7 @@ class Allocator {
         pointer allocate (size_type n) {
             int size = n * sizeof(T);
             int* current = (int*)a;
-            while(size > *current){
+            while(size > *current) {
                 char* next = (char*)current;
                 next += 8+*current;
                 if(next >= a + N) {
