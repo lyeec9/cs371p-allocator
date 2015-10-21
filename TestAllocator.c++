@@ -90,11 +90,21 @@ TYPED_TEST(TestAllocator1, test_10) {
 
 TEST(TestAllocator2, const_index) {
     const Allocator<int, 100> x;
-    ASSERT_EQ(x[0], 0);}
+    ASSERT_EQ(x[0], 92);
+    ASSERT_EQ(x[96], 92);
+}
 
 TEST(TestAllocator2, index) {
-    Allocator<int, 100> x;
-    ASSERT_EQ(x[0], 0);}
+    const Allocator<int, 400> x;
+    ASSERT_EQ(x[0], 392);
+    ASSERT_EQ(x[396], 392);
+}
+
+TEST(TestAllocator2, odd_index) {
+    const Allocator<int, 101> x;
+    ASSERT_EQ(x[0], 93);
+    ASSERT_EQ(x[97], 93);
+}
 
 // --------------
 // TestAllocator3
@@ -162,3 +172,149 @@ TYPED_TEST(TestAllocator3, test_10) {
             --e;
             x.destroy(e);}
         x.deallocate(b, s);}}
+
+// --------------
+// Allocate tests
+// --------------
+
+TEST(TestAllocator4, test_1) {
+    const Allocator<int, 100> x;
+    int* p = x.allocate(1);
+    *p = 5;
+    ASSERT_EQ(x[0], -4);
+    ASSERT_EQ(x[8], -4);
+    ASSERT_EQ(x[4], 5);
+}
+
+TEST(TestAllocator4, test_2) {
+    const Allocator<int, 100> x;
+    int* p = x.allocate(1);
+    *p = 5;
+    int* p2 = x.allocate(1);
+    *p2 = 6;
+    ASSERT_EQ(x[0], -4);
+    ASSERT_EQ(x[8], -4);
+    ASSERT_EQ(x[4], 5);
+
+    ASSERT_EQ(x[12], -4);
+    ASSERT_EQ(x[20], -4);
+    ASSERT_EQ(x[16], 6);
+}
+
+TEST(TestAllocator4, test_3) {
+    const Allocator<int, 12> x;
+    
+    try{
+        int* p = x.allocate(2);
+        FAIL();
+    } catch (bad_alloc& e) {
+        SUCCEED();
+    }
+}
+
+TEST(TestAllocator4, test_4) {
+    const Allocator<double, 100> x;
+    double* p = x.allocate(12);
+    *(p+1) = 1.1;
+    ASSERT_EQ(x[0], -92);
+    ASSERT_EQ(x[96], -92);
+    ASSERT_EQ(x[12], 1.1); 
+}
+
+TEST(TestAllocator4, test_4) {
+    const Allocator<double, 100> x;
+    int* p = x.allocate(1);
+    int* p2 = x.allocate(1);
+    x.deallocate(p, 1);
+    int* p3 = x.allocate(1);    
+
+    ASSERT_EQ(p, p3);
+}
+
+// --------------
+// Deallocate tests
+// --------------
+
+TEST(TestAllocator5, test_1) {
+    const Allocator<int, 100> x;
+    int* p = x.allocate(1);
+    x.deallocate(p, 1);
+    ASSERT_EQ(x[0], 92);
+    ASSERT_EQ(x[96], 92);
+}
+
+TEST(TestAllocator5, test_2) {
+    const Allocator<int, 100> x;
+    int* p = x.allocate(1);
+    int* p2 = x.allocate(1);
+    int* p3 = x.allocate(1);  
+    
+    x.deallocate(p2, 1);
+    ASSERT_EQ(x[12], 4);
+    ASSERT_EQ(x[20], 4);
+}
+
+TEST(TestAllocator5, test_3) {
+    const Allocator<int, 100> x;
+    int* p = x.allocate(1);
+    int* p2 = x.allocate(1);
+    int* p3 = x.allocate(1);  
+    
+    x.deallocate(p2, 1);
+    x.deallocate(p1, 1);
+    ASSERT_EQ(x[0], 16);
+    ASSERT_EQ(x[20], 16);
+}
+
+TEST(TestAllocator5, test_4) {
+    const Allocator<int, 100> x;
+    int* p = x.allocate(1);
+    int* p2 = x.allocate(1);
+    int* p3 = x.allocate(1);  
+    
+    x.deallocate(p2, 1);
+    x.deallocate(p3, 1);
+    ASSERT_EQ(x[12], 80);
+    ASSERT_EQ(x[96], 80);
+}
+
+TEST(TestAllocator5, test_5) {
+    const Allocator<int, 100> x;
+    int* p = x.allocate(1);
+    int* p2 = p + 7;
+
+    try {
+        x.deallocate(p2, 1);
+        FAIL();
+    } catch (std::invalid_argument& e) {
+        SUCCEED();
+    }
+}
+
+TEST(TestAllocator5, test_6) {
+    const Allocator<int, 100> x;
+    int* p = x.allocate(1);
+    int* p2 = p-4;
+
+    try {
+        x.deallocate(p2, 1);
+        FAIL();
+    } catch (std::invalid_argument& e) {
+        SUCCEED();
+    }
+    
+}
+
+TEST(TestAllocator5, test_7) {
+    const Allocator<int, 100> x;
+    int* p = x.allocate(1);
+    int* p3 = p+100;
+
+    
+    try {
+        x.deallocate(p3, 1);
+        FAIL();
+    } catch (std::invalid_argument& e) {
+        SUCCEED();
+    }
+}
