@@ -70,7 +70,9 @@ class Allocator {
         /**
          * O(1) in space
          * O(n) in time
-         * <your documentation>
+         * Checks to make sure that the array is intact. Validates against sentinels that are misaligned, sentinels that point past the end of the array,
+         * free space that cannot support a single element, and checks to make sure no two free blocks are adjacent to each other.
+         * return true if the array is valid and false otherwise.
          */
         bool valid () const {
             int curIndex = 0;
