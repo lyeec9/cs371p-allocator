@@ -322,5 +322,54 @@ TEST(TestAllocator5, test_7) {
 }
 
 // --------------
-// Deallocate tests
+// Valid tests
 // --------------
+
+TEST(TestAllocator6, test_1) {
+    Allocator<int, 100> x;
+    x[0] = 8;
+    x[12] = 9;
+    ASSERT_FALSE(x.valid());
+}
+
+TEST(TestAllocator6, test_2) {
+    Allocator<int, 100> x;
+    x[0] = 8;
+    x[12] = 8;
+    x[16] = 4;
+    x[24] = 4;
+    ASSERT_FALSE(x.valid());
+}
+
+TEST(TestAllocator6, test_3) {
+    Allocator<int, 100> x;
+    x[0] = -8;
+    x[12] = -8;
+    x[16] = 84;
+    ASSERT_FALSE(x.valid());
+}
+
+TEST(TestAllocator6, test_4) {
+    Allocator<double, 100> x;
+    x[0] = 4;
+    x[12] = 4;
+    x[16] = 80;
+    x[96] = 80;
+    ASSERT_FALSE(x.valid());
+}
+
+TEST(TestAllocator6, test_5) {
+    Allocator<int, 100> x;
+    x[0] = -8;
+    x[4] = 2346427;
+    x[12] = -8;
+    x[16] = 8;
+    x[28] = 8;
+    x[32] = -40;
+    x[48] = 346236;
+    x[52] = 235;
+    x[76] = -40;
+    x[80] = -12;
+    x[96] = -12;
+    ASSERT_TRUE(x.valid());
+}

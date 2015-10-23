@@ -56,6 +56,7 @@ class Allocator {
             return !(lhs == rhs);}
 
     private:
+
         // ----
         // data
         // ----
@@ -97,7 +98,11 @@ class Allocator {
         /**
          * O(1) in space
          * O(1) in time
-         * <your documentation>
+         * 
+         * Overloads the array access operator for Allocator
+         * param i an integer argument that specifies the index to dereference
+         * return the address of an index within Allocator
+         *
          * https://code.google.com/p/googletest/wiki/AdvancedGuide#Private_Class_Members
          */
         FRIEND_TEST(TestAllocator2, index); 
@@ -113,6 +118,11 @@ class Allocator {
         FRIEND_TEST(TestAllocator5, test_5);
         FRIEND_TEST(TestAllocator5, test_6);
         FRIEND_TEST(TestAllocator5, test_7);
+        FRIEND_TEST(TestAllocator6, test_1);
+        FRIEND_TEST(TestAllocator6, test_2);
+        FRIEND_TEST(TestAllocator6, test_3);
+        FRIEND_TEST(TestAllocator6, test_4);
+        FRIEND_TEST(TestAllocator6, test_5);
         int& operator [] (int i) {
             return *reinterpret_cast<int*>(&a[i]);}
 
@@ -124,6 +134,9 @@ class Allocator {
         /**
          * O(1) in space
          * O(1) in time
+         *
+         * Overloads the constructor Allocator. Initializes the beginning and end sentinels.
+         *
          * throw a bad_alloc exception, if N is less than sizeof(T) + (2 * sizeof(int))
          */
         Allocator () {
@@ -134,16 +147,7 @@ class Allocator {
             (*this)[N-4] = N-8;
             
         
-            assert(valid());}
-
-
-        void print() {
-            for(int i = 0; i < N/4; i++) {
-                std::cout << (long)(&((*this)[4*i])) << " " <<  (*this)[4*i]<< std::endl;
-            }
-
-            std::cout << std::endl << std::endl;
-        }
+            assert(valid());}  
 
         // Default copy, destructor, and copy assignment
         // Allocator  (const Allocator&);
@@ -163,47 +167,31 @@ class Allocator {
          * throw a bad_alloc exception, if n is invalid
          */
         pointer allocate (size_type n) {
-            //print();
             int size = n * sizeof(T);
             int* current = &((*this)[0]);
             while(size > *current) {
                 char* next = (char*)current;
                 next += 8+std::abs(*current);
-/*std::cout << "current:: " << (long)current << std::endl;
-std::cout << "next:: " << (long)next << std::endl;*/
                 if(next >= (char*)(&((*this)[0])) + N) {
                     throw std::bad_alloc();
                 }
                 current = (int*)next; 
             }
-
-//std::cout << "if statement " << *current - size - 8 << " - " << sizeof(T) << std::endl;
             if(*current - size - 8 < (int)sizeof(T)) {
-//std::cout << "I'm here!!" << std::endl;
-//                std::cout << "size " << size << std::endl;
                 size = *current;
-//                std::cout << "size " << size << std::endl;
                 *current = -size;
                 *(current + size/4 + 1) = -size;
             } else {
                 int temp = *current;
                 *current = -size;
                 *(current + size/4 + 1) = -size;
-                //char* nextBlock = ((char*)current) + 8;
-                //*((int*)nextBlock) = -size;
-                /*std::cout << (long)nextBlock << std::endl;
-                std::cout << (long)(current + size/4 + 1) << std::endl;
-                std::cout << *(current + size/4 + 1) << std::endl;*/
                 int rem = temp - size - 8;
-                /*std::cout << "temp " << temp<< std::endl;
-                std::cout << "rem " << rem << std::endl;*/
                 *(current + size/4 + 2) = rem;
                 *(current + size/4 + 3 + rem/4) = rem;
             }
             
 
             assert(valid());
-            //print();
             return (pointer)(current+1);}             
 
         // ---------
@@ -227,7 +215,8 @@ std::cout << "next:: " << (long)next << std::endl;*/
          * O(1) in time
          * after deallocation adjacent free blocks must be coalesced
          * throw an invalid_argument exception, if p is invalid
-         * <your documentation>
+         * param p the pointer to the data that needs to be deallocated
+         * param size_type unused variable. Necessary by interface.
          */
         void deallocate (pointer p, size_type) {
             //print();
@@ -246,9 +235,9 @@ std::cout << "next:: " << (long)next << std::endl;*/
 
             *head = std::abs(*head);
             *tail = std::abs(*tail);
-            //if not the head of the array
             if(head > &(*this)[8]) {
                 if(*(head -1) > 0) {
+                    //if previous segment is also free, coalesce
                     int* prevTail = head-1;
                     int prevSize = *prevTail;
                     int* prevHead = (int*)((char*)prevTail - prevSize - 4);
@@ -259,13 +248,10 @@ std::cout << "next:: " << (long)next << std::endl;*/
                     *tail = curSize;
                     
                 }
-            } 
+            }
             if(tail < &(*this)[N-8]) {
-/*std::cout << "Gets somewhere!" << std::endl;
-std::cout << "Current tail pointer " << (long)(tail)<< std::endl;
-std::cout << "Next pointer" << (long)(tail+1)<< std::endl;
-std::cout << "Next head " << *(tail+1) << std::endl;*/
                 if(*(tail+1) > 0) {
+                    //if next segment is also free, coalesce
                     int* nextHead = tail+1;
                     int nextSize  = *nextHead;
                     int* nextTail = (int*)((char*)nextHead + nextSize + 4);
@@ -274,9 +260,6 @@ std::cout << "Next head " << *(tail+1) << std::endl;*/
                     curSize = curSize + 8 + nextSize;
                     *head = curSize;
                     *tail = curSize;
-/*std::cout << "size " << curSize <<std::endl;
-std::cout << "head " << *head <<std::endl;
-std::cout << "tail " << *tail <<std::endl;*/
 
                 }
             }
@@ -299,7 +282,9 @@ std::cout << "tail " << *tail <<std::endl;*/
         /**
          * O(1) in space
          * O(1) in time
-         * <your documentation>
+         * Overrides the const array access operator to return a const address to a location with Allocator.
+         * param i the index of Allocator that will be returned
+         * return the const address of the index
          */
         const int& operator [] (int i) const {
             return *reinterpret_cast<const int*>(&a[i]);}};
