@@ -1,0 +1,7 @@
+# http://git-scm.com/docs/gitignore/
+
+*.gcda
+*.gcno
+*.gcov
+GenerateCache*
+cache.txt
