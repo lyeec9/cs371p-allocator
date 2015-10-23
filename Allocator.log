@@ -1,0 +1,78 @@
+commit e57f9c211d59616918cb81e7c59bce73c9f23b4a
+Author: Naeem Quddus <nquddus@cs.utexas.edu>
+Date:   Thu Oct 22 20:33:50 2015 -0500
+
+    Added tests to public test repo. This fixes #10
+
+commit d3cb03feb761799d924d3ab5621afc21bfbe34c9
+Author: Naeem Quddus <nquddus@cs.utexas.edu>
+Date:   Thu Oct 22 20:24:49 2015 -0500
+
+    Added documentation for Allocator
+    ()
+
+commit 5ec60355954c114276019b44987287dbc9562c8c
+Author: Naeem Quddus <nquddus@cs.utexas.edu>
+Date:   Thu Oct 22 20:22:50 2015 -0500
+
+    Added the git ignore to the repository.
+
+commit 5a4663208cfe525e3778535db340147b1ffd7b1c
+Author: Naeem Quddus <nquddus@cs.utexas.edu>
+Date:   Thu Oct 22 20:19:46 2015 -0500
+
+    Added code documentation and ran Doxygen to create the html/ folder. This fixes #11. This fixes #12.
+
+commit e83c6c16012dbf36bbdde11f616162fa85325bf8
+Author: Naeem Quddus <nquddus@cs.utexas.edu>
+Date:   Thu Oct 22 20:12:43 2015 -0500
+
+    Created unit tests for valid(). This fixes #2
+
+commit 0d8cb98b0030355b542740ae324a908cbf399c3f
+Author: Naeem Quddus <nquddus@cs.utexas.edu>
+Date:   Thu Oct 22 19:40:17 2015 -0500
+
+    Wrote Deallocate and Valid and throws on bad input. This closes #5. This closes #6. This closes #7. This closes #8. This closes #15.
+
+commit 08ac7281e85e934951e8c0993d0f722e0936668d
+Author: Naeem Quddus <nquddus@cs.utexas.edu>
+Date:   Wed Oct 21 01:59:53 2015 -0500
+
+    Added check for Allocator() to throw bad_alloc. This closes #7.
+
+commit 2fce7f1caccaf4164a43db456556f4d23ba053c7
+Author: Naeem Quddus <nquddus@cs.utexas.edu>
+Date:   Wed Oct 21 01:56:14 2015 -0500
+
+    Added the code for Allocator() and allocate(). This closes #3. This close #4.
+
+commit aee3f772ff6df045d16bcdb56397063614e45b3b
+Author: Naeem Quddus <nquddus@cs.utexas.edu>
+Date:   Wed Oct 21 00:45:38 2015 -0500
+
+    Initial tests for allocate and deallocate. Currently not compiling.
+
+commit 00991faf4a10dc446a55c36404681d942f15c903
+Author: Naeem Quddus <nquddus@cs.utexas.edu>
+Date:   Tue Oct 20 23:10:36 2015 -0500
+
+    Added .travis.yml and changed makes to reflect current project. This closes #9.
+
+commit 290a5056e10532a0dd63d68d751d354aa82b3f50
+Author: lyee <lyeec9@gmail.com>
+Date:   Sat Oct 17 19:11:40 2015 -0500
+
+    Copied the makefile over from Voting. Fixes #14
+
+commit ab9d0be23e66d0375edeb0691464f95fd1dd76ca
+Author: lyee <lyeec9@gmail.com>
+Date:   Sat Oct 17 18:45:26 2015 -0500
+
+    Copied Downing's code and .files. This fixes #1.
+
+commit 5655a0441045afcf245130eaf1949a3ab59ccc1a
+Author: http://lyeec9.github.io <lyeec9@gmail.com>
+Date:   Sat Oct 17 18:36:18 2015 -0500
+
+    Initial commit
