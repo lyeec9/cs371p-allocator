@@ -15,6 +15,8 @@
 #include <cstddef>   // ptrdiff_t, size_t
 #include <new>       // bad_alloc, new
 #include <stdexcept> // invalid_argument
+#include <cmath>     // std::abs
+
 
 // ---------
 // Allocator
@@ -70,7 +72,26 @@ class Allocator {
          * <your documentation>
          */
         bool valid () const {
-            // <your code>
+            int curIndex = 0;
+            while(curIndex < N) {
+                const int* head = &((*this)[curIndex]);
+                int size = std::abs(*head);
+                if(size < sizeof(T))
+                    return false;
+                const int* tail = head + size/4 + 1;
+                int nextIndex = curIndex + 8 + size;
+                if(nextIndex > N)
+                    return false;
+                if(*head != *tail)
+                    return false;
+                if(*head > 0) {
+                    if(curIndex > 0 && (*this)[curIndex - 4] > 0)
+                        return false;  
+                } 
+                curIndex = nextIndex; 
+            }
+            if(curIndex  != N )
+                return false;
             return true;}
 
         /**
@@ -79,7 +100,19 @@ class Allocator {
          * <your documentation>
          * https://code.google.com/p/googletest/wiki/AdvancedGuide#Private_Class_Members
          */
-        FRIEND_TEST(TestAllocator2, index);
+        FRIEND_TEST(TestAllocator2, index); 
+        FRIEND_TEST(TestAllocator4, test_1);
+        FRIEND_TEST(TestAllocator4, test_2);
+        FRIEND_TEST(TestAllocator4, test_3);
+        FRIEND_TEST(TestAllocator4, test_4);
+        FRIEND_TEST(TestAllocator4, test_5);
+        FRIEND_TEST(TestAllocator5, test_1);
+        FRIEND_TEST(TestAllocator5, test_2);
+        FRIEND_TEST(TestAllocator5, test_3);
+        FRIEND_TEST(TestAllocator5, test_4);
+        FRIEND_TEST(TestAllocator5, test_5);
+        FRIEND_TEST(TestAllocator5, test_6);
+        FRIEND_TEST(TestAllocator5, test_7);
         int& operator [] (int i) {
             return *reinterpret_cast<int*>(&a[i]);}
 
@@ -99,7 +132,18 @@ class Allocator {
             }
             (*this)[0] = N-8;
             (*this)[N-4] = N-8;
+            
+        
             assert(valid());}
+
+
+        void print() {
+            for(int i = 0; i < N/4; i++) {
+                std::cout << (long)(&((*this)[4*i])) << " " <<  (*this)[4*i]<< std::endl;
+            }
+
+            std::cout << std::endl << std::endl;
+        }
 
         // Default copy, destructor, and copy assignment
         // Allocator  (const Allocator&);
@@ -119,32 +163,48 @@ class Allocator {
          * throw a bad_alloc exception, if n is invalid
          */
         pointer allocate (size_type n) {
+            //print();
             int size = n * sizeof(T);
-            int* current = (int*)a;
+            int* current = &((*this)[0]);
             while(size > *current) {
                 char* next = (char*)current;
-                next += 8+*current;
-                if(next >= a + N) {
+                next += 8+std::abs(*current);
+/*std::cout << "current:: " << (long)current << std::endl;
+std::cout << "next:: " << (long)next << std::endl;*/
+                if(next >= (char*)(&((*this)[0])) + N) {
                     throw std::bad_alloc();
                 }
                 current = (int*)next; 
             }
-            if(*current - size - 8 < sizeof(T)) {
+
+//std::cout << "if statement " << *current - size - 8 << " - " << sizeof(T) << std::endl;
+            if(*current - size - 8 < (int)sizeof(T)) {
+//std::cout << "I'm here!!" << std::endl;
+//                std::cout << "size " << size << std::endl;
                 size = *current;
+//                std::cout << "size " << size << std::endl;
                 *current = -size;
                 *(current + size/4 + 1) = -size;
             } else {
                 int temp = *current;
                 *current = -size;
                 *(current + size/4 + 1) = -size;
+                //char* nextBlock = ((char*)current) + 8;
+                //*((int*)nextBlock) = -size;
+                /*std::cout << (long)nextBlock << std::endl;
+                std::cout << (long)(current + size/4 + 1) << std::endl;
+                std::cout << *(current + size/4 + 1) << std::endl;*/
                 int rem = temp - size - 8;
+                /*std::cout << "temp " << temp<< std::endl;
+                std::cout << "rem " << rem << std::endl;*/
                 *(current + size/4 + 2) = rem;
                 *(current + size/4 + 3 + rem/4) = rem;
             }
             
 
             assert(valid());
-            return (pointer)(current+1);}             // replace!
+            //print();
+            return (pointer)(current+1);}             
 
         // ---------
         // construct
@@ -170,8 +230,59 @@ class Allocator {
          * <your documentation>
          */
         void deallocate (pointer p, size_type) {
-            // <your code>
+            //print();
+            if((int*)p < &(*this)[4] || (int*)p > &(*this)[N-4])
+                throw std::invalid_argument("Argument out of bounds!");
+
+            int* head = ((int*)p - 1);
+            if(*head > 0)
+                throw std::invalid_argument("Argument not a given pointer!");
+            int curSize = std::abs(*head);
+            if(head + curSize/4  > &(*this)[N-4])
+                throw std::invalid_argument("Argument not a given pointer!");
+            int* tail = (int*)((char*)p + curSize);
+            if(*head != *tail)
+                throw std::invalid_argument("Argument not a given pointer!");
+
+            *head = std::abs(*head);
+            *tail = std::abs(*tail);
+            //if not the head of the array
+            if(head > &(*this)[8]) {
+                if(*(head -1) > 0) {
+                    int* prevTail = head-1;
+                    int prevSize = *prevTail;
+                    int* prevHead = (int*)((char*)prevTail - prevSize - 4);
+
+                    head = prevHead;
+                    curSize = prevSize + 8 + curSize;
+                    *head = curSize;
+                    *tail = curSize;
+                    
+                }
+            } 
+            if(tail < &(*this)[N-8]) {
+/*std::cout << "Gets somewhere!" << std::endl;
+std::cout << "Current tail pointer " << (long)(tail)<< std::endl;
+std::cout << "Next pointer" << (long)(tail+1)<< std::endl;
+std::cout << "Next head " << *(tail+1) << std::endl;*/
+                if(*(tail+1) > 0) {
+                    int* nextHead = tail+1;
+                    int nextSize  = *nextHead;
+                    int* nextTail = (int*)((char*)nextHead + nextSize + 4);
+
+                    tail = nextTail;
+                    curSize = curSize + 8 + nextSize;
+                    *head = curSize;
+                    *tail = curSize;
+/*std::cout << "size " << curSize <<std::endl;
+std::cout << "head " << *head <<std::endl;
+std::cout << "tail " << *tail <<std::endl;*/
+
+                }
+            }
+            //print();
             assert(valid());}
+
 
         // -------
         // destroy
@@ -192,7 +303,7 @@ class Allocator {
          */
         const int& operator [] (int i) const {
             return *reinterpret_cast<const int*>(&a[i]);}};
-
+    
 
 
 #endif // Allocator_h
